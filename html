@@ -1,0 +1,749 @@
+
+<html lang="pt-BR" class="text-base">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel FáciL - Acessibilidade para Idosos</title>
+    <!-- Tailwind CSS para estruturação rápida e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fonte legível Sans-Serif -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-scale: 100%;
+            --bg-main: #f8fafc;
+            --text-main: #0f172a;
+            --card-bg: #ffffff;
+            --border-color: #cbd5e1;
+        }
+
+        html {
+            font-size: var(--font-scale);
+            font-family: 'Lexend', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Estilos de Alto Contraste para melhor visualização */
+        body.high-contrast {
+            --bg-main: #000000 !important;
+            --text-main: #ffff00 !important;
+            --card-bg: #121212 !important;
+            --border-color: #ffff00 !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+
+        body.high-contrast .accessible-card {
+            background-color: #000000 !important;
+            border: 3px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+
+        body.high-contrast button {
+            border: 2px solid #ffff00 !important;
+        }
+
+        /* Animações e Foco Visível Alto */
+        button:focus, a:focus {
+            outline: 4px solid #2563eb !important;
+            outline-offset: 4px;
+        }
+
+        /* Estilo base de botões táteis grandes */
+        .btn-large {
+            min-height: 3.5rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        .btn-large:active {
+            transform: scale(0.97);
+        }
+
+        /* Modal backdrop overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- BARRA SUPERIOR DE ACESSIBILIDADE FIXA -->
+    <header class="sticky top-0 z-40 bg-slate-900 text-white shadow-lg border-b-4 border-blue-600">
+        <div class="max-w-5xl mx-auto p-3 flex flex-wrap items-center justify-between gap-3">
+            
+            <div class="flex items-center gap-2">
+                <i data-lucide="eye" class="w-8 h-8 text-yellow-400"></i>
+                <span class="font-bold text-lg md:text-xl tracking-wide">Opções de Leitura:</span>
+            </div>
+
+            <!-- Botões de Acessibilidade -->
+            <div class="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Menu de Acessibilidade">
+                
+                <!-- Aumentar Fonte -->
+                <button onclick="changeFontSize(1)" 
+                        title="Aumentar o tamanho do texto" 
+                        aria-label="Aumentar Fonte"
+                        class="btn-large bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-lg flex items-center gap-1 shadow">
+                    <i data-lucide="zoom-in" class="w-6 h-6"></i>
+                    <span>A+</span>
+                </button>
+
+                <!-- Diminuir Fonte -->
+                <button onclick="changeFontSize(-1)" 
+                        title="Diminuir o tamanho do texto" 
+                        aria-label="Diminuir Fonte"
+                        class="btn-large bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-lg flex items-center gap-1 shadow">
+                    <i data-lucide="zoom-out" class="w-6 h-6"></i>
+                    <span>A-</span>
+                </button>
+
+                <!-- Leitura em Voz Alta -->
+                <button id="btnReadAloud" onclick="readPageAloud()" 
+                        title="Ouvir o texto da tela em voz alta" 
+                        aria-label="Ler tela em Voz Alta"
+                        class="btn-large bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-xl text-lg flex items-center gap-2 shadow">
+                    <i data-lucide="volume-2" class="w-6 h-6"></i>
+                    <span id="readStatusText">Ouvir Tela</span>
+                </button>
+
+                <!-- Alto Contraste -->
+                <button onclick="toggleContrast()" 
+                        title="Ativar modo de cores com alto contraste" 
+                        aria-label="Alternar Alto Contraste"
+                        class="btn-large bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-lg flex items-center gap-2 shadow">
+                    <i data-lucide="contrast" class="w-6 h-6"></i>
+                    <span>Contraste</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-4 md:p-6 space-y-8" id="main-content">
+
+        <!-- CABEÇALHO DE BOAS-VINDAS -->
+        <section class="accessible-card bg-white p-6 rounded-2xl shadow-md border-2 border-slate-200 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">Olá! Seja Bem-Vindo(a)</h1>
+                <p class="text-xl text-slate-600 font-medium">Este espaço foi feito com letras grandes e botões simples para te ajudar no dia a dia.</p>
+            </div>
+            <div class="bg-blue-100 text-blue-900 px-4 py-3 rounded-xl font-bold text-lg text-center border-2 border-blue-300">
+                <i data-lucide="calendar" class="inline w-6 h-6 mr-1"></i>
+                <span id="currentDate">Hoje</span>
+            </div>
+        </section>
+
+        <!-- BOTÃO DE DESTAQUE - EMERGÊNCIA -->
+        <section class="accessible-card bg-red-50 p-6 md:p-8 rounded-3xl border-4 border-red-500 text-center shadow-xl">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-red-800 mb-3">Precisa de Ajuda Rápida?</h2>
+            <p class="text-xl text-red-900 mb-6 font-semibold">Clique no botão vermelho abaixo para ver os números da Polícia, Bombeiros e seu Familiar.</p>
+            
+            <button onclick="openEmergencyModal()" 
+                    aria-label="Abrir Menu de Emergência e Socorro"
+                    class="btn-large bg-red-600 hover:bg-red-700 text-white text-2xl md:text-3xl py-6 px-8 rounded-2xl w-full md:w-auto shadow-2xl animate-bounce flex items-center justify-center gap-4 mx-auto border-4 border-white">
+                <i data-lucide="siren" class="w-10 h-10 md:w-12 md:h-12"></i>
+                <span>🚨 BOTÃO DE EMERGÊNCIA</span>
+            </button>
+        </section>
+
+        <!-- CARTÕES DE ATALHOS ÚTEIS -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Cartão 1: Contatos Rápidos -->
+            <article class="accessible-card bg-white p-6 rounded-2xl shadow-md border-2 border-slate-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-4 text-emerald-700">
+                        <i data-lucide="phone-call" class="w-8 h-8"></i>
+                        <h3 class="text-2xl font-bold">Ligar para Família</h3>
+                    </div>
+                    <p class="text-lg text-slate-700 mb-6">Mande uma mensagem direta ou ligue para sua pessoa de confiança no WhatsApp.</p>
+                </div>
+                <a href="https://wa.me/5511999999999?text=Olá,%20preciso%20falar%20com%20você!" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="btn-large bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-6 rounded-xl text-xl w-full text-center shadow">
+                    <i data-lucide="message-circle" class="w-7 h-7"></i>
+                    <span>Conversar no WhatsApp</span>
+                </a>
+            </article>
+
+            <!-- Cartão 2: Lembretes de Remédios -->
+            <article class="accessible-card bg-white p-6 rounded-2xl shadow-md border-2 border-slate-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-4 text-indigo-700">
+                        <i data-lucide="pill" class="w-8 h-8"></i>
+                        <h3 class="text-2xl font-bold">Meus Remédios</h3>
+                    </div>
+                    <ul class="text-lg text-slate-800 space-y-3 mb-6">
+                        <li class="flex items-center gap-2 bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+                            <i data-lucide="clock" class="w-6 h-6 text-indigo-600"></i>
+                            <span><strong>08:00</strong> - Remédio da Pressão</span>
+                        </li>
+                        <li class="flex items-center gap-2 bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+                            <i data-lucide="clock" class="w-6 h-6 text-indigo-600"></i>
+                            <span><strong>14:00</strong> - Vitamina D</span>
+                        </li>
+                    </ul>
+                </div>
+                <button onclick="speakText('Lembrete de remédios: Às 8 horas tomar remédio da pressão. Às 14 horas tomar vitamina D.')" 
+                        class="btn-large bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-6 rounded-xl text-xl w-full text-center shadow">
+                    <i data-lucide="volume-2" class="w-7 h-7"></i>
+                    <span>Ouvir Horários</span>
+                </button>
+            </article>
+
+        </section>
+
+    </main>
+
+    <!-- MODAL DE EMERGÊNCIA (JANELA POPUP) -->
+    <div id="emergencyModal" 
+         class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4" 
+         role="dialog" 
+         aria-labelledby="modalTitle" 
+         aria-modal="true">
+        
+        <div class="accessible-card bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 md:p-8 border-4 border-red-600 space-y-6 relative max-h-[90vh] overflow-y-auto">
+            
+            <!-- Cabeçalho do Modal -->
+            <div class="flex justify-between items-start border-b-2 border-slate-200 pb-4">
+                <div class="flex items-center gap-3 text-red-600">
+                    <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+                    <h2 id="modalTitle" class="text-3xl font-extrabold">Contatos de Emergência</h2>
+                </div>
+                <button onclick="closeEmergencyModal()" 
+                        aria-label="Fechar janela de emergência"
+                        class="text-slate-500 hover:text-slate-800 p-2 rounded-xl hover:bg-slate-100">
+                    <i data-lucide="x-circle" class="w-10 h-10"></i>
+                </button>
+            </div>
+
+            <p class="text-xl text-slate-700 font-medium">
+                Escolha abaixo para quem deseja ligar imediatamente:
+            </p>
+
+            <!-- Lista de Telefones Úteis -->
+            <div class="space-y-4">
+                
+                <!-- Polícia Militar -->
+                <a href="tel:190" 
+                   class="btn-large bg-blue-700 hover:bg-blue-800 text-white p-5 rounded-2xl text-2xl w-full justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="shield-alert" class="w-8 h-8"></i>
+                        <span class="font-bold">Polícia Militar</span>
+                    </div>
+                    <span class="bg-blue-900 px-4 py-2 rounded-xl text-yellow-300 font-black">190</span>
+                </a>
+
+                <!-- Bombeiros / SAMU -->
+                <a href="tel:193" 
+                   class="btn-large bg-red-600 hover:bg-red-700 text-white p-5 rounded-2xl text-2xl w-full justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="flame" class="w-8 h-8"></i>
+                        <span class="font-bold">Bombeiros / Ambulância</span>
+                    </div>
+                    <span class="bg-red-900 px-4 py-2 rounded-xl text-white font-black">193</span>
+                </a>
+
+                <!-- Contato de Confiança - WhatsApp -->
+                <a href="https://wa.me/5511999999999?text=EMERGÊNCIA!%20Preciso%20de%20ajuda!" 
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn-large bg-emerald-600 hover:bg-emerald-700 text-white p-5 rounded-2xl text-2xl w-full justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="heart-handshake" class="w-8 h-8"></i>
+                        <span class="font-bold">WhatsApp do Filho(a) / Confiança</span>
+                    </div>
+                    <span class="bg-emerald-800 px-3 py-2 rounded-xl text-white font-bold text-lg">Mandar Mensagem</span>
+                </a>
+
+            </div>
+
+            <!-- Botão de Fechar Grande -->
+            <div class="pt-4 border-t-2 border-slate-200">
+                <button onclick="closeEmergencyModal()" 
+                        class="btn-large bg-slate-300 hover:bg-slate-400 text-slate-900 py-4 px-6 rounded-2xl text-xl w-full shadow">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    <span>Voltar à Tela Inicial</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT DE ACESSIBILIDADE E INTERAÇÃO -->
+    <script>
+        // Inicializa os ícones Lucide
+        lucide.createIcons();
+
+        // 1. Data Atual Formatada em Português
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date().toLocaleDateString('pt-BR', dateOptions);
+        document.getElementById('currentDate').textContent = today.charAt(0).toUpperCase() + today.slice(1);
+
+        // 2. Aumentar e Diminuir a Fonte
+        let currentFontScale = 100;
+        function changeFontSize(delta) {
+            currentFontScale += delta * 15;
+            // Limites de segurança para tamanho da fonte (80% até 160%)
+            if (currentFontScale < 80) currentFontScale = 80;
+            if (currentFontScale > 160) currentFontScale = 160;
+            
+            document.documentElement.style.fontSize = currentFontScale + '%';
+        }
+
+        // 3. Modos de Alto Contraste
+        function toggleContrast() {
+            document.body.classList.toggle('high-contrast');
+        }
+
+        // 4. Leitura em Voz Alta (SpeechSynthesis API)
+        let isSpeaking = false;
+        
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Para qualquer leitura anterior
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 0.9; // Velocidade ligeiramente reduzida para clareza
+                
+                utterance.onend = function() {
+                    isSpeaking = false;
+                    updateReadButtonState();
+                };
+
+                window.speechSynthesis.speak(utterance);
+                isSpeaking = true;
+                updateReadButtonState();
+            } else {
+                alert("Seu navegador não suporta a leitura em voz alta.");
+            }
+        }
+
+        function readPageAloud() {
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                updateReadButtonState();
+            } else {
+<html lang="pt-BR" class="text-base">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel FáciL - Acessibilidade para Idosos</title>
+    <!-- Tailwind CSS para estruturação rápida e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fonte legível Sans-Serif -->
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-scale: 100%;
+            --bg-main: #f8fafc;
+            --text-main: #0f172a;
+            --card-bg: #ffffff;
+            --border-color: #cbd5e1;
+        }
+
+        html {
+            font-size: var(--font-scale);
+            font-family: 'Lexend', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        /* Estilos de Alto Contraste para melhor visualização */
+        body.high-contrast {
+            --bg-main: #000000 !important;
+            --text-main: #ffff00 !important;
+            --card-bg: #121212 !important;
+            --border-color: #ffff00 !important;
+            background-color: var(--bg-main) !important;
+            color: var(--text-main) !important;
+        }
+
+        body.high-contrast .accessible-card {
+            background-color: #000000 !important;
+            border: 3px solid #ffff00 !important;
+            color: #ffff00 !important;
+        }
+
+        body.high-contrast button {
+            border: 2px solid #ffff00 !important;
+        }
+
+        /* Animações e Foco Visível Alto */
+        button:focus, a:focus {
+            outline: 4px solid #2563eb !important;
+            outline-offset: 4px;
+        }
+
+        /* Estilo base de botões táteis grandes */
+        .btn-large {
+            min-height: 3.5rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+        }
+
+        .btn-large:active {
+            transform: scale(0.97);
+        }
+
+        /* Modal backdrop overlay */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- BARRA SUPERIOR DE ACESSIBILIDADE FIXA -->
+    <header class="sticky top-0 z-40 bg-slate-900 text-white shadow-lg border-b-4 border-blue-600">
+        <div class="max-w-5xl mx-auto p-3 flex flex-wrap items-center justify-between gap-3">
+            
+            <div class="flex items-center gap-2">
+                <i data-lucide="eye" class="w-8 h-8 text-yellow-400"></i>
+                <span class="font-bold text-lg md:text-xl tracking-wide">Opções de Leitura:</span>
+            </div>
+
+            <!-- Botões de Acessibilidade -->
+            <div class="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Menu de Acessibilidade">
+                
+                <!-- Aumentar Fonte -->
+                <button onclick="changeFontSize(1)" 
+                        title="Aumentar o tamanho do texto" 
+                        aria-label="Aumentar Fonte"
+                        class="btn-large bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-xl text-lg flex items-center gap-1 shadow">
+                    <i data-lucide="zoom-in" class="w-6 h-6"></i>
+                    <span>A+</span>
+                </button>
+
+                <!-- Diminuir Fonte -->
+                <button onclick="changeFontSize(-1)" 
+                        title="Diminuir o tamanho do texto" 
+                        aria-label="Diminuir Fonte"
+                        class="btn-large bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-lg flex items-center gap-1 shadow">
+                    <i data-lucide="zoom-out" class="w-6 h-6"></i>
+                    <span>A-</span>
+                </button>
+
+                <!-- Leitura em Voz Alta -->
+                <button id="btnReadAloud" onclick="readPageAloud()" 
+                        title="Ouvir o texto da tela em voz alta" 
+                        aria-label="Ler tela em Voz Alta"
+                        class="btn-large bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-xl text-lg flex items-center gap-2 shadow">
+                    <i data-lucide="volume-2" class="w-6 h-6"></i>
+                    <span id="readStatusText">Ouvir Tela</span>
+                </button>
+
+                <!-- Alto Contraste -->
+                <button onclick="toggleContrast()" 
+                        title="Ativar modo de cores com alto contraste" 
+                        aria-label="Alternar Alto Contraste"
+                        class="btn-large bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-xl text-lg flex items-center gap-2 shadow">
+                    <i data-lucide="contrast" class="w-6 h-6"></i>
+                    <span>Contraste</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="flex-grow max-w-5xl w-full mx-auto p-4 md:p-6 space-y-8" id="main-content">
+
+        <!-- CABEÇALHO DE BOAS-VINDAS -->
+        <section class="accessible-card bg-white p-6 rounded-2xl shadow-md border-2 border-slate-200 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">Olá! Seja Bem-Vindo(a)</h1>
+                <p class="text-xl text-slate-600 font-medium">Este espaço foi feito com letras grandes e botões simples para te ajudar no dia a dia.</p>
+            </div>
+            <div class="bg-blue-100 text-blue-900 px-4 py-3 rounded-xl font-bold text-lg text-center border-2 border-blue-300">
+                <i data-lucide="calendar" class="inline w-6 h-6 mr-1"></i>
+                <span id="currentDate">Hoje</span>
+            </div>
+        </section>
+
+        <!-- BOTÃO DE DESTAQUE - EMERGÊNCIA -->
+        <section class="accessible-card bg-red-50 p-6 md:p-8 rounded-3xl border-4 border-red-500 text-center shadow-xl">
+            <h2 class="text-2xl md:text-3xl font-extrabold text-red-800 mb-3">Precisa de Ajuda Rápida?</h2>
+            <p class="text-xl text-red-900 mb-6 font-semibold">Clique no botão vermelho abaixo para ver os números da Polícia, Bombeiros e seu Familiar.</p>
+            
+            <button onclick="openEmergencyModal()" 
+                    aria-label="Abrir Menu de Emergência e Socorro"
+                    class="btn-large bg-red-600 hover:bg-red-700 text-white text-2xl md:text-3xl py-6 px-8 rounded-2xl w-full md:w-auto shadow-2xl animate-bounce flex items-center justify-center gap-4 mx-auto border-4 border-white">
+                <i data-lucide="siren" class="w-10 h-10 md:w-12 md:h-12"></i>
+                <span>🚨 BOTÃO DE EMERGÊNCIA</span>
+            </button>
+        </section>
+
+        <!-- CARTÕES DE ATALHOS ÚTEIS -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Cartão 1: Contatos Rápidos -->
+            <article class="accessible-card bg-white p-6 rounded-2xl shadow-md border-2 border-slate-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-4 text-emerald-700">
+                        <i data-lucide="phone-call" class="w-8 h-8"></i>
+                        <h3 class="text-2xl font-bold">Ligar para Família</h3>
+                    </div>
+                    <p class="text-lg text-slate-700 mb-6">Mande uma mensagem direta ou ligue para sua pessoa de confiança no WhatsApp.</p>
+                </div>
+                <a href="https://wa.me/5511999999999?text=Olá,%20preciso%20falar%20com%20você!" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="btn-large bg-emerald-600 hover:bg-emerald-700 text-white py-4 px-6 rounded-xl text-xl w-full text-center shadow">
+                    <i data-lucide="message-circle" class="w-7 h-7"></i>
+                    <span>Conversar no WhatsApp</span>
+                </a>
+            </article>
+
+            <!-- Cartão 2: Lembretes de Remédios -->
+            <article class="accessible-card bg-white p-6 rounded-2xl shadow-md border-2 border-slate-200 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center gap-3 mb-4 text-indigo-700">
+                        <i data-lucide="pill" class="w-8 h-8"></i>
+                        <h3 class="text-2xl font-bold">Meus Remédios</h3>
+                    </div>
+                    <ul class="text-lg text-slate-800 space-y-3 mb-6">
+                        <li class="flex items-center gap-2 bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+                            <i data-lucide="clock" class="w-6 h-6 text-indigo-600"></i>
+                            <span><strong>08:00</strong> - Remédio da Pressão</span>
+                        </li>
+                        <li class="flex items-center gap-2 bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+                            <i data-lucide="clock" class="w-6 h-6 text-indigo-600"></i>
+                            <span><strong>14:00</strong> - Vitamina D</span>
+                        </li>
+                    </ul>
+                </div>
+                <button onclick="speakText('Lembrete de remédios: Às 8 horas tomar remédio da pressão. Às 14 horas tomar vitamina D.')" 
+                        class="btn-large bg-indigo-600 hover:bg-indigo-700 text-white py-4 px-6 rounded-xl text-xl w-full text-center shadow">
+                    <i data-lucide="volume-2" class="w-7 h-7"></i>
+                    <span>Ouvir Horários</span>
+                </button>
+            </article>
+
+        </section>
+
+    </main>
+
+    <!-- MODAL DE EMERGÊNCIA (JANELA POPUP) -->
+    <div id="emergencyModal" 
+         class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4" 
+         role="dialog" 
+         aria-labelledby="modalTitle" 
+         aria-modal="true">
+        
+        <div class="accessible-card bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 md:p-8 border-4 border-red-600 space-y-6 relative max-h-[90vh] overflow-y-auto">
+            
+            <!-- Cabeçalho do Modal -->
+            <div class="flex justify-between items-start border-b-2 border-slate-200 pb-4">
+                <div class="flex items-center gap-3 text-red-600">
+                    <i data-lucide="alert-triangle" class="w-10 h-10"></i>
+                    <h2 id="modalTitle" class="text-3xl font-extrabold">Contatos de Emergência</h2>
+                </div>
+                <button onclick="closeEmergencyModal()" 
+                        aria-label="Fechar janela de emergência"
+                        class="text-slate-500 hover:text-slate-800 p-2 rounded-xl hover:bg-slate-100">
+                    <i data-lucide="x-circle" class="w-10 h-10"></i>
+                </button>
+            </div>
+
+            <p class="text-xl text-slate-700 font-medium">
+                Escolha abaixo para quem deseja ligar imediatamente:
+            </p>
+
+            <!-- Lista de Telefones Úteis -->
+            <div class="space-y-4">
+                
+                <!-- Polícia Militar -->
+                <a href="tel:190" 
+                   class="btn-large bg-blue-700 hover:bg-blue-800 text-white p-5 rounded-2xl text-2xl w-full justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="shield-alert" class="w-8 h-8"></i>
+                        <span class="font-bold">Polícia Militar</span>
+                    </div>
+                    <span class="bg-blue-900 px-4 py-2 rounded-xl text-yellow-300 font-black">190</span>
+                </a>
+
+                <!-- Bombeiros / SAMU -->
+                <a href="tel:193" 
+                   class="btn-large bg-red-600 hover:bg-red-700 text-white p-5 rounded-2xl text-2xl w-full justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="flame" class="w-8 h-8"></i>
+                        <span class="font-bold">Bombeiros / Ambulância</span>
+                    </div>
+                    <span class="bg-red-900 px-4 py-2 rounded-xl text-white font-black">193</span>
+                </a>
+
+                <!-- Contato de Confiança - WhatsApp -->
+                <a href="https://wa.me/5511999999999?text=EMERGÊNCIA!%20Preciso%20de%20ajuda!" 
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="btn-large bg-emerald-600 hover:bg-emerald-700 text-white p-5 rounded-2xl text-2xl w-full justify-between shadow-lg">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="heart-handshake" class="w-8 h-8"></i>
+                        <span class="font-bold">WhatsApp do Filho(a) / Confiança</span>
+                    </div>
+                    <span class="bg-emerald-800 px-3 py-2 rounded-xl text-white font-bold text-lg">Mandar Mensagem</span>
+                </a>
+
+            </div>
+
+            <!-- Botão de Fechar Grande -->
+            <div class="pt-4 border-t-2 border-slate-200">
+                <button onclick="closeEmergencyModal()" 
+                        class="btn-large bg-slate-300 hover:bg-slate-400 text-slate-900 py-4 px-6 rounded-2xl text-xl w-full shadow">
+                    <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    <span>Voltar à Tela Inicial</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT DE ACESSIBILIDADE E INTERAÇÃO -->
+    <script>
+        // Inicializa os ícones Lucide
+        lucide.createIcons();
+
+        // 1. Data Atual Formatada em Português
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date().toLocaleDateString('pt-BR', dateOptions);
+        document.getElementById('currentDate').textContent = today.charAt(0).toUpperCase() + today.slice(1);
+
+        // 2. Aumentar e Diminuir a Fonte
+        let currentFontScale = 100;
+        function changeFontSize(delta) {
+            currentFontScale += delta * 15;
+            // Limites de segurança para tamanho da fonte (80% até 160%)
+            if (currentFontScale < 80) currentFontScale = 80;
+            if (currentFontScale > 160) currentFontScale = 160;
+            
+            document.documentElement.style.fontSize = currentFontScale + '%';
+        }
+
+        // 3. Modos de Alto Contraste
+        function toggleContrast() {
+            document.body.classList.toggle('high-contrast');
+        }
+
+        // 4. Leitura em Voz Alta (SpeechSynthesis API)
+        let isSpeaking = false;
+        
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Para qualquer leitura anterior
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 0.9; // Velocidade ligeiramente reduzida para clareza
+                
+                utterance.onend = function() {
+                    isSpeaking = false;
+                    updateReadButtonState();
+                };
+
+                window.speechSynthesis.speak(utterance);
+                isSpeaking = true;
+                updateReadButtonState();
+            } else {
+                alert("Seu navegador não suporta a leitura em voz alta.");
+            }
+        }
+
+        function readPageAloud() {
+            if (isSpeaking) {
+                window.speechSynthesis.cancel();
+                isSpeaking = false;
+                updateReadButtonState();
+            } else {
+                const mainContent = document.getElementById('main-content').innerText;
+                speakText("Iniciando leitura da tela. " + mainContent);
+            }
+        }
+
+        function updateReadButtonState() {
+            const btnText = document.getElementById('readStatusText');
+            if (isSpeaking) {
+                btnText.textContent = "Parar Leitura";
+            } else {
+                btnText.textContent = "Ouvir Tela";
+            }
+        }
+
+        // 5. Funções para Abrir e Fechar o Modal de Emergência
+        function openEmergencyModal() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.remove('hidden');
+            // Anuncia a abertura para leitores de tela e voz alta
+            speakText("Modal de emergência aberto. Opções disponíveis: Polícia 190, Bombeiros 193 e WhatsApp de Confiança.");
+        }
+
+        function closeEmergencyModal() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.add('hidden');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        // Fechar modal ao pressionar a tecla ESC
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeEmergencyModal();
+            }
+        });
+    </script>
+</body>
+</html>
+                const mainContent = document.getElementById('main-content').innerText;
+                speakText("Iniciando leitura da tela. " + mainContent);
+            }
+        }
+
+        function updateReadButtonState() {
+            const btnText = document.getElementById('readStatusText');
+            if (isSpeaking) {
+                btnText.textContent = "Parar Leitura";
+            } else {
+                btnText.textContent = "Ouvir Tela";
+            }
+        }
+
+        // 5. Funções para Abrir e Fechar o Modal de Emergência
+        function openEmergencyModal() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.remove('hidden');
+            // Anuncia a abertura para leitores de tela e voz alta
+            speakText("Modal de emergência aberto. Opções disponíveis: Polícia 190, Bombeiros 193 e WhatsApp de Confiança.");
+        }
+
+        function closeEmergencyModal() {
+            const modal = document.getElementById('emergencyModal');
+            modal.classList.add('hidden');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        // Fechar modal ao pressionar a tecla ESC
+        window.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeEmergencyModal();
+            }
+        });
+    </script>
+</body>
+</html>
